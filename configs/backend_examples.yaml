@@ -1,0 +1,62 @@
+# LLM backend examples.
+#
+# This file is a reference, not a runnable config — copy whichever `llms:`
+# entries you need into configs/benchmark.yaml. Every entry there needs a
+# `name` and a `backend`; `openai_compatible` entries also need a `base_url`.
+#
+# Two backends are supported:
+#
+#   ollama              native Ollama client (default). Gives a per-model
+#                       memory figure via `ollama ps`.
+#
+#   openai_compatible   any server speaking the OpenAI
+#                       /v1/chat/completions API. One implementation covers
+#                       llama.cpp server, LM Studio, vLLM, and Ollama's own
+#                       /v1 endpoint. Memory is a system-wide nvidia-smi
+#                       reading (see the note at the bottom).
+#
+# Requires `pip install openai` for the openai_compatible entries.
+
+llms:
+  # --- Ollama (native) -----------------------------------------------------
+  - name: "qwen3.5:4b"
+    backend: ollama
+
+  # --- llama.cpp server --------------------------------------------------
+  # Started with: llama-server -m model.gguf --port 8080
+  - name: "local-model"                  # llama.cpp usually ignores this; any string works
+    backend: openai_compatible
+    base_url: "http://localhost:8080/v1"
+
+  # --- LM Studio -------------------------------------------------------------
+  # Local Server tab, default port 1234.
+  - name: "TheBloke/some-model-GGUF"     # must match the identifier LM Studio shows
+    backend: openai_compatible
+    base_url: "http://localhost:1234/v1"
+
+  # --- vLLM ---------------------------------------------------------------
+  # Started with: vllm serve <model> --port 8000
+  - name: "mistralai/Ministral-3B"       # must match the served model name
+    backend: openai_compatible
+    base_url: "http://localhost:8000/v1"
+
+  # --- Ollama via its OpenAI-compatible endpoint -------------------------
+  # If you'd rather standardize on one HTTP shape for everything.
+  - name: "llama3.2:3b"
+    backend: openai_compatible
+    base_url: "http://localhost:11434/v1"
+
+  # --- A server that checks the API key (rare, for local use) -----------
+  # - name: "some-model"
+  #   backend: openai_compatible
+  #   base_url: "http://localhost:8000/v1"
+  #   api_key: "sk-..."                  # defaults to "not-needed" when omitted
+
+# Memory metric caveat for openai_compatible backends
+# ---------------------------------------------------
+# Ollama reports how much memory a specific model is using (`ollama ps`).
+# No OpenAI-compatible server exposes an equivalent, so peak_gpu_mem_mb for
+# these backends is the system-wide GPU memory in use (nvidia-smi), summed
+# across cards. If anything else touches the GPU during a run, that number
+# includes it. Fine for a rough comparison; footnote it in a results table.
+# On machines without an NVIDIA GPU / nvidia-smi the figure is null.
