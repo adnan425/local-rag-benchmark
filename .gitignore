@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Virtualenvs
+.venv/
+venv/
+env/
+
+# Benchmark outputs and local Chroma index
+results/
+*.log
+
+# Local run archives / scratch
+archive/
+
+# Local custom corpus dumps (keep qa_pairs.jsonl if you choose to track it)
+data/corpus/
+data/squad-dev-v1.1.json
+
+# Local Hugging Face model cache
+models/
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
