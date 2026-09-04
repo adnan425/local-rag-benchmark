@@ -1,0 +1,67 @@
+seed: 42
+
+dataset:
+  source: squad          # squad | custom
+  n_passages: 200
+  n_questions: 100
+
+vectorstore:
+  persist_dir: "./results/chroma"
+
+llms:
+  - name: "llama3.2:3b"
+    backend: ollama
+  - name: "gemma4:e4b"
+    backend: ollama
+  - name: "phi4-mini"
+    backend: ollama
+  - name: "phi4:14b"
+    backend: ollama
+  - name: "qwen3.5:4b"
+    backend: ollama
+  - name: "qwen3.5:9b"
+    backend: ollama
+  - name: "ministral-3:3b"
+    backend: ollama
+  # Any server exposing an OpenAI-compatible /v1 endpoint (llama.cpp server,
+  # LM Studio, vLLM, or Ollama's own /v1) — add `base_url` and switch the
+  # backend, no code change. See configs/backend_examples.yaml for details.
+  # - name: "local-model"          # llama.cpp server usually ignores this
+  #   backend: openai_compatible
+  #   base_url: "http://localhost:8080/v1"
+
+embeddings:
+  - name: "nomic-embed-text"
+    backend: ollama
+  - name: "qwen3-embedding:0.6b"
+    backend: ollama
+  - name: "all-MiniLM-L6-v2"
+    backend: sentence-transformers
+
+retrieval_strategies:
+  - dense
+  - sparse
+  - hybrid
+
+retrieval:
+  top_k: 5
+  hybrid_alpha: 0.5
+
+generation:
+  # The prompt forces short answers so word-overlap metrics don't punish
+  # models that would otherwise reply in full sentences. Changing it means
+  # re-running the whole sweep; results aren't comparable across prompts.
+  system_prompt: >
+    Answer the question using only the provided context. Respond with the
+    shortest possible exact phrase that answers the question — a word, a
+    name, or a short span copied from the context. Do not use a full
+    sentence. Do not explain your reasoning. Do not add any words beyond
+    the answer itself. If the answer is not in the context, respond with
+    exactly: I don't know.
+  temperature: 0
+  num_predict: 64
+  timeout_s: 180
+
+output:
+  results_csv: "./results/benchmark_results.csv"
+  summary_csv: "./results/benchmark_summary.csv"
